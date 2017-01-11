@@ -1,0 +1,502 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include "stdlib.h"
+using namespace std;
+
+class Node
+{
+public:
+    char color;
+    int vertex;
+    int d;
+    int f;
+    Node *parent;
+    Node *next;
+
+    Node()
+    {
+        color = '0';
+        parent = NULL;
+        next = NULL;
+        vertex = -1;
+        d = -1;
+        f = -1;
+    }
+
+    Node(int x)
+    {
+        color = '0';
+        parent = NULL;
+        next = NULL;
+        vertex = x;
+        d = -1;
+        f = -1;
+    }
+
+
+
+};
+
+class NodeList
+{
+    private:
+        Node **node;
+        Node **revnode;
+//        vector<int> scc;
+        Node **scc;
+    public:
+        int nOfV;
+        int time;
+        int forscc;
+        NodeList(int nOfVertex)
+        {
+            node = new Node*[nOfVertex];
+            revnode = new Node*[nOfVertex];
+            scc = new Node*[nOfVertex];
+            for(int i = 0; i < nOfVertex; i++)
+            {
+                //node[i] = NULL;
+                node[i] = new Node(i);
+                revnode[i] = new Node(i);
+                scc[i] = NULL;
+            }
+            nOfV = nOfVertex;
+
+            //output();
+            forscc = 0;
+            time = 0;
+        }
+
+        void output()
+        {
+            for(int i = 0; i < nOfV; i++)
+            {
+                if(node[i] != NULL)
+                {
+                    Node *temp = node[i];
+                    cout << "node[" << i << "]: ";
+                    while(temp != NULL)
+                    {
+                        cout << temp->vertex << "  ";
+                        temp = temp->next;
+                    }
+                    cout << endl;
+                }
+                else
+                    cout << "node[" << i << "] is empty..." << endl;
+            }
+        }
+
+        void sccoutput()
+        {
+            for(int i = 0; i < nOfV; i++)
+            {
+                if(scc[i] != NULL)
+                {
+                    Node *temp = scc[i];
+                    cout << "scc[" << i << "]: ";
+                    while(temp != NULL)
+                    {
+                        cout << temp->vertex << "  ";
+                        temp = temp->next;
+                    }
+                    cout << endl;
+                }
+                else
+                    cout << "scc[" << i << "] is empty..." << endl;
+            }
+        }
+
+        void revoutput()
+        {
+            for(int i = 0; i < nOfV; i++)
+            {
+                if(revnode[i] != NULL)
+                {
+                    Node *temp = revnode[i];
+                    cout << "revnode[" << i << "]: ";
+                    while(temp != NULL)
+                    {
+                        cout << temp->vertex << "  ";
+                        temp = temp->next;
+                    }
+                    cout << endl;
+                }
+                else
+                    cout << "revnode[" << i << "] is empty..." << endl;
+            }
+
+        }
+
+        int countelements(Node *node1)
+        {
+            int x = 0;
+            while(node1 != NULL)
+            {
+                x++;
+                node1 = node1->next;
+            }
+            return (x); //so it skips the first value.
+        }
+
+        void Insert(int from, int to)
+        {
+            if(node[from] == NULL)
+            {
+                node[from] = new Node(to);
+            }
+            else
+            {
+                Node *newone = new Node(to);
+                //attach from the back.
+                Node *temp = node[from];
+
+                while(temp->next != NULL)
+                {
+                    temp = temp->next; //then temp is the last value.
+                }
+                temp->next = newone; // when there is only first value. its next doesn't exist so it just applies here.
+
+            }
+        }
+
+        void revInsert(int from, int to)
+        {
+            if(node[from] == NULL)
+            {
+                revnode[to] = new Node(from);
+            }
+            else
+            {
+                Node *newone = new Node(from);
+                //attach from the back.
+                Node *temp = revnode[to];
+
+                while(temp->next != NULL)
+                {
+                    temp = temp->next; //then temp is the last value.
+                }
+                temp->next = newone; // when there is only first value. its next doesn't exist so it just applies here.
+            }
+		}
+
+        void sccInsert(Node **n, int from, int to)
+        {
+            if(n[from] == NULL)
+            {
+                n[from] = new Node(to);
+            }
+            else
+            {
+                Node *newone = new Node(to);
+                //attach from the back.
+                Node *temp = n[from];
+
+                while(temp->next != NULL)
+                {
+                    temp = temp->next; //then temp is the last value.
+                }
+                temp->next = newone; // when there is only first value. its next doesn't exist so it just applies here.
+
+            }
+        }
+
+        void DFS()
+        {
+           // cout << "DFS called......" << endl;
+            //i think G is the whole list.
+            //then u <-- G.V; where V is node[from] and u is any of those in there.
+            for(int i = 0; i < nOfV; i++)
+            {
+                if(node[i] != NULL)
+                {
+                    Node *tracker = node[i];
+                    while(tracker != NULL)
+                    {
+                        tracker->color = 'W';
+                        tracker->parent = NULL;
+                        tracker = tracker->next;
+                    }
+                }
+                else //node is empty
+                {
+                    //do nothing.
+                }
+            }
+
+            time = 0;
+            for (int i = 0; i < nOfV; i++)
+            {
+        //        cout << "~~~~~~~~~      i = " << i << "  " << endl;;
+                if(node[i]->next == NULL)
+     //               cout << "node[" << i << "]->next == NULL" << endl;
+
+                if(node[i]->color == 'W' && node[i]->next != NULL)
+                    DFSvisit(node[i]);
+
+            }
+  //          cout << "DFS successfully ended... " << endl;
+        }
+
+        void DFSvisit(Node *u)
+        {
+            time++;
+            u->d = time; //discovered time = starting time
+            u->color = 'G'; // gray
+
+            //find vertices 'v' connected from 'u'
+          //  cout << "countelements(" << u->vertex << "): " << countelements(u) << endl;
+            for(int i = 1; i < countelements(u); i++) // for each node u...
+            {
+                int val;
+
+                Node *tracker = u->next;
+                val = tracker->vertex; //first one first. if
+                for(int j = 1; j < i; j++) // do next one if so.
+                {
+                    tracker = tracker->next;
+                    val = tracker->vertex;
+                }
+             //   cout << "for i = " << i << "  u: " << u->vertex << "   v: " << val << endl;
+                Node *v = node[val];
+                if(v != NULL && v->color == 'W')
+                {
+               //     cout << "DFS visit..." << endl;
+                    v->parent = u; //instead of u
+                    DFSvisit(v);
+                }
+            }
+                u->color = 'B';
+                time++;
+                u->f = time;
+            //    cout << "For node, " << u->vertex <<  " d = " << u->d << "   f = " << u->f <<  "..." << endl;
+
+        }
+
+        void revDFS()
+        {
+       //     cout << "refDFS called......" << endl;
+            for(int i = 0; i < nOfV; i++)
+            {
+                   if(revnode[i] != NULL)
+                {
+                    Node *tracker = revnode[i];
+                    while(tracker != NULL)
+                    {
+                        tracker->color = 'W';
+                        tracker->parent = NULL;
+                        tracker = tracker->next;
+                    }
+                }
+                else //node is empty
+                {
+                    //do nothing.
+                }
+            }
+
+            time = 0;
+            for (int i = 0; i < nOfV; i++)
+            {
+                //
+             //   cout << " i = " << i << endl;
+                if(revnode[i]->color == 'W' && revnode[i]->next != NULL)
+                {
+             //       cout << "if called... so revDFSvisit to be called...   ";
+                    revDFSvisit(revnode[i]);
+                    forscc++;
+                }
+                else if(revnode[i]->next == NULL)
+                {
+             //       cout <<"else called..." << endl;
+                    sccInsert(scc, forscc, revnode[i]->vertex);
+                    revnode[i]->color = 'G';
+                    time++;
+                    revnode[i]->d = time;
+                    time++;
+                    revnode[i]->f = time;
+
+                    forscc++;
+                }
+
+            }
+          //  cout << "revDFS successfully ended... " << endl;
+
+        }
+
+        void revDFSvisit(Node *u)
+        {
+        //    cout << "\nDFSvisit called... " << endl;
+            time++;
+            u->d = time; //discovered time = starting time
+            u->color = 'G'; // gray
+
+            //find vertices 'v' connected from 'u'
+    //        cout << "countelements(" << u->vertex << "): " << countelements(u) << endl;
+            for(int i = 1; i < countelements(u); i++) // for each node u...
+            {
+                int val;
+                Node *tracker = u->next;
+                val = tracker->vertex; //first one first. if
+                for(int j = 1; j < i; j++) // do next one if so.
+                {
+                    tracker = tracker->next;
+                    val = tracker->vertex;
+                }
+      //          cout << "for i = " << i << "  u: " << u->vertex << "   v: " << val << endl;
+                Node *v = revnode[val];
+                if(v != NULL && v->color == 'W')
+                {
+  //                  cout << "revDFS visit..." << endl;
+                    v->parent = u; //instead of u
+                    revDFSvisit(v);
+                }
+            }
+                u->color = 'B';
+                time++;
+                u->f = time;
+
+                sccInsert(scc, forscc,  u->vertex);
+
+//                cout << "For node, " << u->vertex <<  " d = " << u->d << "   f = " << u->f <<  "..." << endl;
+
+        }
+
+        void showdftime()
+        {
+            cout << "showdftime called... " << endl;
+            for(int i = 0; i < nOfV; i++)
+            {
+            cout << "node[" << i << "]'s d: " << node[i]->d << endl;
+            cout << "node[" << i << "]'s f: " << node[i]->f << endl;
+            }
+        }
+
+        void revshowdftime()
+        {
+            cout << "showdftime called... " << endl;
+            for(int i = 0; i < nOfV; i++)
+            {
+            cout << "node[" << i << "]'s d: " << revnode[i]->d << endl;
+            cout << "node[" << i << "]'s f: " << revnode[i]->f << endl;
+            }
+        }
+
+        int searchrow(int k)
+        {
+  //          cout << "In search row... " << endl;
+            Node *n;
+    //        cout << "looking for k = " << k << endl;
+            for(int i = 0; i < nOfV; i++) // for each node
+            {
+                n = scc[i];
+                for(int j = 0; j < countelements(scc[i]); j++) // for that node's adj
+                {
+                    if(n->vertex == k)
+                    {
+      //                  cout << "value " << k << " was found on row " << i << endl;
+                        return i;
+                    }
+        //            cout << "n: " << n->vertex << endl;
+                    n = n->next;
+                }
+            }
+        }
+
+        void finaloutput()
+        {
+            //for each value. find it in scc
+            //then output the last value of its row.
+//            cout << "!!! final output called" << endl;
+            for(int i = 0; i < nOfV; i++)
+            {
+
+                int atrow = searchrow(i);
+                //cout << "atrow = " << atrow << endl;
+                Node *oki = scc[atrow];
+
+                //get to the last and output it
+                for(int j = 0; j < countelements(scc[atrow])-1; j++)
+                {
+                    oki = oki->next;
+
+                }
+                cout << oki->vertex << endl;
+            }
+
+        }
+};
+
+int main()
+{
+    cerr << "Hello world!" << endl;
+
+    //input
+    //number vertex, edges, then (u,v)
+    int vsize = 0;
+    cin >> vsize;
+    vector<int> ver;
+
+    //verticies
+    for(int i = 0; i < vsize; i++)
+    {
+        ver.push_back(i);
+    }
+
+    //record the edges
+    int esize = 0;
+    cin >> esize;
+    string str;
+
+    NodeList nodelist(vsize);
+    cin.ignore(100, '\n');
+    int x, y = 0;
+    for(int i = 0; i< esize; i++)
+    {
+        getline(cin, str);
+
+        stringstream stream(str);
+        string n;
+        int cc = 0;
+        while(stream >> n){
+            if(cc==0)
+            {
+                cc++;
+                x = atoi(n.c_str()); //value = 45
+
+            }
+            else if(cc == 1)
+            {
+                cc++;
+                y = atoi(n.c_str()); //value = 45
+
+            }
+
+            if(cc == 2) //cc = 2 means both edges have been colleceted
+            {
+                nodelist.Insert(x, y);
+                nodelist.revInsert(x, y); // needed since revNode is inside that class.
+            }
+        }
+       // cout << endl;
+
+        //inesrt to each respected list
+    }
+  //  nodelist.output();
+    nodelist.DFS();
+  //  nodelist.showdftime();
+
+ //   cout << endl << endl;
+ //   nodelist.revoutput();
+    nodelist.revDFS();
+ //   nodelist.revshowdftime();
+ //   nodelist.sccoutput();
+
+   // cout << "\n\n Final output..." << endl;
+    nodelist.finaloutput();
+
+    //cout << "\n\n\n revDFS completed. Now outputting... " << endl;
+    //nodelist.revoutput();
+    return 0;
+}
