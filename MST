@@ -1,0 +1,542 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include "stdlib.h"
+
+using namespace std;
+
+class Node
+{
+public:
+    Node *next;
+    Node *parent;
+    Node *temp;
+
+    int vertex;
+    int weight;
+    int key;
+    bool selected;
+    Node()
+    {
+        selected = false;
+        temp = NULL;
+        parent = NULL;
+        next = NULL;
+        weight = 1000;
+        key = 1000;
+        vertex = -1;
+    }
+
+    Node(int v)
+    {
+        selected = false;
+        temp = NULL;
+        parent = NULL;
+        next = NULL;
+        weight = 1000;
+        key = 1000;
+        vertex = v;
+    }
+
+    Node(int v, int w)
+    {
+        selected = false;
+        temp = NULL;
+        parent = NULL;
+        next = NULL;
+        weight = w;
+        key = 1000;
+        vertex = v;
+    }
+
+    void setkey(int k)
+    {
+        key = k;
+    }
+
+    void Inserting(Node *u)
+    {
+        Node *temp = this;
+        while(temp != NULL) //get to the last one;
+        {
+            temp = temp->next;
+
+        }
+        temp = u;
+    }
+
+    void extractmin2(Node *Q)
+    {
+        // Find the lowest vertex.
+        // delete that node and return it.
+
+        Node *u = Q;
+        //find lowest value in Q... upto nOfV
+        int val = Q[0].vertex;
+        int counter = 0;
+
+        //find the lowest one and store it to 'u'
+        while(u != NULL)
+        {
+
+        //this public 'temp' can be used to collect the deleted one.
+            if(val < u->vertex)
+            {
+                val = u->vertex;
+                temp = u;
+            }
+            u = u->next;
+        }
+
+        //now the val has the vertex one.
+        Node *previous;
+        while(u != NULL)
+        {
+            if(val == u->vertex) //the vertex to be deleted.
+            {
+                previous->next = u->next;
+                delete u;
+                break;
+            }
+            previous = u;
+            u = u->next;
+        }
+        cout << "deleted vertex: " << val << endl;
+
+    }
+
+
+};
+
+class Nodelist
+{
+    private:
+        Node **nlist;
+        Node *temp;
+        Node *Q;
+        Node *T;
+
+        int nOfv;
+
+    public:
+        Nodelist()
+        {
+
+        }
+
+        Nodelist(int nOfVertex)
+        {
+            nlist = new Node*[nOfVertex];
+            nOfv = nOfVertex;
+            temp = NULL;
+            Q = NULL;
+            for(int i = 0; i < nOfVertex; i++)
+            {
+                nlist[i] = new Node(i);
+            }
+        }
+
+        int countelements(Node *node1)
+        {
+            int x = 0;
+            while(node1 != NULL)
+            {
+                x++;
+                node1 = node1->next;
+            }
+            return (x); //so it skips the first value.
+        }
+
+        void output(Node *n)
+        {
+            Node *t = n;
+            if(t==NULL)
+                cout << "t is empty" << endl;
+            while(t != NULL)
+            {
+                cout << "t: " << t->vertex;
+                if(t->selected == true)
+                    cout << "  t.s = true ";
+                else
+                    cout << "  t.s = false ";
+
+                cout << "  t.k: " << t->key;
+
+                if(t->parent == NULL)
+                    cout << "  t.p = NULL" << endl;
+                else
+                    cout << "  t.p = " << t->parent->vertex << endl;
+
+                t = t->next;
+            }
+
+
+        }
+
+        //default stuff
+        void Insertweight(int from, int to, int w)
+        {
+            if(nlist[from] == NULL)
+            {
+                nlist[from] = new Node(to, w);
+            }
+            else
+            {
+                Node *newone = new Node(to, w);
+                //attach from the back.
+                Node *temp = nlist[from];
+
+                while(temp->next != NULL)
+                {
+                    temp = temp->next; //then temp is the last value.
+                }
+                temp->next = newone; // when there is only first value. its next doesn't exist so it just applies here.
+            }
+        }
+
+        void InsertQ(int vert)
+        {
+            Node *tracker = Q;
+            if(tracker == NULL)
+            {
+                Q = new Node(vert);
+//                cout << "u.vertex" << u->vertex << endl << endl;
+            }
+            else
+            {
+                while(tracker != NULL)
+                {
+                    if(tracker->next == NULL)
+                    {
+                        tracker->next = new Node(vert);
+                        break;
+                    }
+                    tracker = tracker->next;
+                }
+
+            }
+        }
+
+   /* void extractmin()
+    {
+        // Find the lowest vertex.
+        // delete that node and return it.
+        cout << "   extractmin() starting...";
+        Node *u = Q;
+        //find lowest value in Q... upto nOfV
+        int val = Q[0].vertex;
+        int counter = 0;
+        cout << "val (Q[0].) is " << val << endl;
+        //find the lowest one and store it to 'u'
+        while(u != NULL)
+        {
+
+        //this public 'temp' can be used to collect the deleted one.
+            if(u->vertex < val)
+            {
+                val = u->vertex;
+                temp = u;
+            }
+            u = u->next;
+        }
+        cout << "val222222: " << val << endl;
+        //now the val has the vertex one.
+        Node *previous = NULL;
+        u = Q;
+        while(u != NULL)
+        {
+            if(val == u->vertex && previous == NULL) //first elemetn
+            {
+                cout << "first element to be deleted" << endl;
+                temp = u; // so this temp stored to-be-delete vertex
+                u = u->next;
+                cout << "hm" << endl;
+                Q = u;
+                temp->next = NULL;
+                break;
+            }
+            if(val == u->vertex && previous != NULL) //the vertex to be deleted.
+            {
+                cout << "2nd or latter deleted" << endl;
+//                output(Q);
+                temp = u;
+                temp->next = NULL;
+                previous->next = u->next;
+                cout << "deleted node in extract(): " << u->vertex << endl;
+                Q = previous;
+//                output(Q);
+                delete u;
+                break;
+            }
+            cout << "um" << endl;
+            previous = u;
+            u = u->next;
+        }
+        cout << "After deleted vertex2: " << val << endl;
+        output(Q);
+        cout << "extractmin() ended... " << endl;
+    } */
+
+     void extractmin()
+    {
+        // Find the lowest key.
+     //   cout << "   extractmin() starting~~~~~~..." << endl;
+        Node *u = Q;
+        int val;
+        if(u->vertex == 0)
+            val = 1000;
+        else
+            val = u->key;
+        int counter = 0;
+
+//find node with lowest key
+        while(u != NULL)
+        {
+            if(u->key < val && u->selected == false)
+            {
+   //             cout << "new val selected" << endl;
+                val = u->key;
+                temp = u;
+            }
+            u = u->next;
+        } //now u is the one with smallest key.
+
+        temp->selected = true;
+
+//        cout << "NOoooooooooow in temp: " << temp->vertex << "  temp.k: " << temp->key << endl;
+  //     cout << "~~~extractmin() ended... " << endl;
+    }
+
+
+        void decreasekey(Node *n, int r, int k)
+        {
+            for(int i = 0; i < r; i++)
+            {
+                n = n->next;
+            }
+            n->key = k;
+        }
+
+        bool checkVinQ(Node *n)
+        {
+            Node *tracker = Q;
+
+            while(tracker != NULL)
+            {
+                if(n->vertex == tracker->vertex)
+                {
+                    return true;
+                }
+                tracker = tracker->next;
+            }
+
+        }
+
+        void Prim(int r)
+        {
+
+            for(int i = 0; i < nOfv; i++)
+            {
+                nlist[i]->key = 1000; //-1 to represent none;
+                nlist[i]->parent = NULL;
+                InsertQ(nlist[i]->vertex);
+            }
+      //      cout << "Beginning of Prim... " << endl;
+         //   output(Q);
+    //        cout << "=================================" << endl;
+            decreasekey(Q, 0, 0); // where 2nd is for root
+
+            Node *q = Q;
+            Node *what;
+            while(q != NULL)
+            {
+                extractmin();
+
+        //        cout << "after extractmin()... set the lowest one 'selected' false " << endl;
+      //          cout << "temp.v: " << temp->vertex << endl; // temp has that minimum
+
+                //temp has the extracted Q
+                Node *u = temp; //extracted minimum Q is stored in temp
+
+                int index = 0;
+                //find its respective u in nlist
+                //then we will use it to find the number of connected vertices
+                while(1)
+                {
+                    if(u->vertex == nlist[index]->vertex)
+                    {
+                        u = nlist[index];
+                        break;
+                    }
+                    index++;
+                }
+     //           cout << "hm2" << endl;
+                //check for the connected vertices.
+                Node *uQ = Q;
+                while (uQ != NULL)
+                {
+                    if(uQ->vertex == u->vertex)
+                        break;
+
+                    uQ = uQ->next;
+                }
+      //          cout << "uQ.v: " << uQ->vertex << endl;
+        //        cout << "hm3" << endl;
+                Node *v = u->next;
+                int countsize = countelements(u)-1;
+                for(int i = 0; i < countsize; i++)
+                {
+              //      cout << " i : " << i << endl;
+                    // u = nlist[#]
+
+                    Node *vQ = Q;
+                    Node *vv = v;
+            //        cout << "Now v.v: " << v->vertex << endl;
+                    while(vQ != NULL)
+                    {
+                        if(v->vertex == vQ->vertex && vQ->selected == false)
+                        {
+          //                  cout << "Found vQ.v: " << vQ->vertex << endl;
+                            break;
+                        }
+                        vQ = vQ->next;
+                    }
+                    if(vQ == NULL)
+                    {
+                        v = v->next;
+                        continue;
+                    }
+
+                    int w = v->weight;
+
+//                    cout << "u.v: " << u->vertex << "  u->w: " << w << "   uQ.v: " << uQ->vertex << "  uQ.w: " << uQ->weight << "  uQ.k: " << uQ->key << endl;
+  //                  cout << "v.v: " << v->vertex <<  "  w (u.w): " << w << "   vQ.v: " << vQ->vertex << "  vQ.w: " << vQ->weight << endl;
+    //                cout << "w: " << w << "   vQ.k: " << vQ->key << "  uQ.k: " << uQ->key << endl;
+                    if(w < vQ->key)
+                    {
+      //                  cout << "new w is lower!!!";
+        //                cout << "  w: " << w << "   vQ.key: " << vQ->key << "  uQ.k: " << uQ->key << endl;
+                        vQ->parent = uQ;
+                        decreasekey(Q, vQ->vertex, w);
+                    }
+                    //check if u is in Q and w < v.key
+                    //u = u->next;
+                    v = v->next;
+//                    cout << "For loop ending... " << endl;
+  //                  cout << endl;
+
+                }
+       //         output(Q);
+                q = q->next;
+
+                }
+            }
+
+        void checkdeletemin()
+        {
+            Node *Q = new Node();
+            Q = NULL;
+
+            cout << "what" << endl;
+            for(int i = 0; i < nOfv; i++)
+            {
+                nlist[i]->key = -1; //-1 to represent none;
+                nlist[i]->parent = NULL;
+                cout << "f" << endl;
+                InsertQ(nlist[i]->vertex);  //has temp
+            }
+
+            cout << "hi " << endl;
+//           Q->extractmin2();
+          //  extractmin(Q);
+
+
+        }
+
+
+        void output2()
+        {
+            for(int i = 0; i < nOfv; i++)
+            {
+                if(nlist[i] != NULL)
+                {
+                    Node *temp = nlist[i];
+                    cout << "node[" << i << "]: ";
+                    while(temp != NULL)
+                    {
+                        cout << temp->vertex << "(" << temp->weight << ")" << "  ";
+                        temp = temp->next;
+                    }
+                    cout << endl;
+                }
+                else
+                    cout << "node[" << i << "] is empty..." << endl;
+            }
+        }
+
+
+
+
+        void output3()
+        {
+            Node *t = Q;
+            t = t->next;
+            while(t != NULL)
+            {
+                    cout << t->parent->vertex << endl;
+                t = t->next;
+            }
+        }
+};
+
+int main()
+{
+    cerr << "Hello world!" << endl;
+
+    int nofv, nofe;
+    cin >> nofv;
+    cin >> nofe;
+    Nodelist nlist(nofv);
+    cin.ignore(100, '\n');
+    string str;
+    int x, y, z = 0;
+    for(int i = 0; i < nofe; i++)
+    {
+        getline(cin, str);
+
+        stringstream stream(str);
+        string n;
+        int cc = 0;
+        while(stream >> n){
+            if(cc==0)
+            {
+                cc++;
+                x = atoi(n.c_str()); //value = 45
+
+            }
+            else if(cc == 1)
+            {
+                cc++;
+                y = atoi(n.c_str()); //value = 45
+
+            }
+            else if(cc == 2)
+            {
+                cc++;
+                z = atoi(n.c_str());
+            }
+
+            if(cc == 3) //cc = 2 means both edges have been colleceted
+            {
+                nlist.Insertweight(x, y, z);
+                nlist.Insertweight(y, x, z);
+            }
+        }
+    }
+
+    nlist.Prim(0);
+    nlist.output3();
+
+    return 0;
+}
