@@ -1,0 +1,330 @@
+#include <iostream>
+#include <list>
+#include <string>
+#include <sstream>
+#include <vector>
+
+
+using namespace std;
+
+//initially
+//global variable
+int m = 0;
+
+class Node
+{ //each Node has its own 'list'
+  public:
+    int value;
+    int hashval; //from hash function
+    vector<int> list1;
+    Node* next;
+            Node(int key, int value)
+            {
+                this->hashval = key;
+    	        this->value = value;
+    	        this->next = NULL;
+            }
+};
+
+class HashMap
+{
+    private:
+            Node** htable;
+        public:
+            HashMap()
+            {
+                htable = new Node*[m];
+                for (int i = 0; i < m; i++)
+                {
+                    htable[i] = NULL;
+                }
+            }
+             ~HashMap()
+            {
+                for (int i = 0; i < m; i++)
+    	        {
+                    Node* entry = htable[i];
+                    while (entry != NULL)
+    	            {
+                        Node* prev = entry;
+                        entry = entry->next;
+                        delete prev;
+                    }
+                }
+                delete[] htable;
+            }
+
+           //insert
+            void Insert(int key)
+            {
+                int hash_val = HashFunc(key);
+
+                Node *entry = htable[hash_val];
+
+                if( entry == NULL)
+                {
+                    htable[hash_val] = new Node(hash_val, key);
+                    entry = htable[hash_val];
+                }
+                else //if not
+                {
+                    Node *newone = new Node(hash_val, key);
+
+                    //works now.
+                    Node *x = htable[hash_val];
+                    htable[hash_val] = newone;
+                    htable[hash_val]->next = x;
+
+/*
+                    cout << "Htable->val: " << (htable[hash_val]->value)
+                        << "    htable[hash_val]->next->value = " << htable[hash_val]->next->value << endl;
+
+                    htable[hash_val]->value = key;
+
+                    cout << "htable[hash_val]->val: " << (htable[hash_val]->value) << endl;
+                    cout << "htable[]->next->value: " << htable[hash_val]->next->value << endl;
+                    cout << "nextnextvaue" << htable[hash_val]->next->next->value << endl;
+*/
+                }
+
+            //end of insert
+            }
+
+
+            //h(k). returns the hash value
+             int HashFunc(int key)
+            {
+                return key % m;
+            }
+
+            //search
+            int Search(int key)
+            {
+                bool flag = false;
+                int i = 0;
+
+                int hash_val = HashFunc(key);
+                Node* entry = htable[hash_val];
+                while (entry != NULL)
+    	        {
+                    if (entry->value == key)
+    	            {
+                        cout << key << ":FOUND_AT" << hash_val << "," << i << ";\n";
+                        flag = true;
+                    }
+                    entry = entry->next;
+                    i++;
+                }
+                if (!flag)
+                    return -1;
+            }
+
+/* FAILURE
+            //delete
+            int Delete(int key)
+            {
+                int hash_val = HashFunc(key);
+                Node *orgi = htable[hash_val];
+                Node *tracker = htable[hash_val];
+
+                int DoJustTile= 0; // use count to find what is previous node.
+                Node *prev = htable[hash_val];
+
+
+                int index = 0;
+                while(tracker != NULL) //until end of list or value found.
+                {
+                    cout << "tracker->value: " << tracker->value << endl;
+                    if(tracker->value == key)
+                    {
+                        //value found on the array
+                        //2 case scenario. end of array, or more follows..
+                        if(tracker->next == NULL) //if NULL
+                        {
+                            cout << "Next list after found is NULL" << endl;
+                                //index for previous
+                            if(DoJustTile > 0)
+                            {
+                                for(int i = 0; i < DoJustTile; i++)
+                                {
+                                    cout << "htValeBefore: " << htable[hash_val]->value << endl;
+                                    htable[hash_val] = htable[hash_val]->next;
+                                    cout << "htValeAfter: " << htable[hash_val]->value << endl;
+                                }
+                                cout << "To be deleted: " << htable[hash_val]->value << endl;
+                                //htable[hash_val]->value = 0;
+                                //htable[hash_val] = NULL;
+
+                                delete htable[hash_val];
+                                htable[hash_val] = orgi;
+                                //don't forget output
+                                break; //deletion completed. so end the process
+                            }
+                            else //empty list
+                            {
+                                cout << "empty list " << endl;
+                                delete tracker;
+                                htable[hash_val] = NULL; //change it back to NULL, otherwise error occurs where input memory.
+
+                            }
+                            break; //deleted
+                        }
+                        else    //if there are more elements.
+                        {
+                            cout << "Next list after found are more... so just drag them toward left" << endl;
+                            cout << "orgi->val: " << orgi->value << endl;
+                            //Node *x = htable[hash_val];
+                            //htable[hash_val] = newone;
+                            //htable[hash_val]->next = x;
+                        // 6->4->2->     2->  ;;WHEN DELETE 4
+
+                            //previous one is at DJT-1
+                            for(int i = 0; i < DoJustTile-1; i++)
+                                prev = prev->next;
+
+                            prev->next = tracker->next;
+                            cout << "tracker->val:" << tracker->value << endl;
+
+                            htable[hash_val] = prev;
+
+                            //
+                            //x = x->next;
+                            break;
+                        }
+                    }
+
+                    tracker = tracker->next;
+                    DoJustTile++;
+                    cout << "orgi->val: " << orgi->value << endl;
+
+                }
+*/
+            int Delete(int key)
+            {
+                Node *pre = NULL;
+                Node *del = NULL;
+
+                int hash_val = HashFunc(key);
+
+                //if in the front
+                //check if it's root. if so,delete and update the root
+                if(htable[hash_val]->value == key)
+                {
+                    del = htable[hash_val];
+
+                    //update
+                    htable[hash_val] = del->next;
+                    delete del;
+                    return 1;
+                }
+
+                pre = htable[hash_val];
+                del = htable[hash_val]->next;
+                //traverse the list and check.
+                while(del != NULL) //until we reach the very last node, which its next is NULL.
+                {
+
+                    if(del->value == key)
+                    {
+                        //update the list
+                        //since the value is found, that one is skipped. 0 2 4 and for 2, 0->next = 2->next, which 0 4
+                        pre->next = del->next;
+                        delete del;
+                        //break; //instead of break
+                        return 1;
+                    }
+                    pre = del;
+                    del = del->next;
+                }
+
+            //end of Delete()
+            }
+
+            //output
+            void Output()
+            {
+                int hash_val = 0;
+                int i = 0;
+                Node* move1;
+                for(i = 0; i < m; i++)
+                {
+                    move1 = htable[i];
+
+                    cout << i << ":";
+                    while(move1!=NULL)
+                    {
+                        cout  << move1->value << "->";
+                        move1 = move1->next;
+                    }
+                    cout << ";\n";
+                }
+            }
+
+
+
+//end here
+};
+
+
+int main()
+{
+    cin >> m;
+
+    HashMap hashymap;
+
+
+    char line[100];
+    // Main loop
+    while ( std::cin.getline(line, 100) )
+    {
+        string str(line);
+        if ( str.size()==0 ) continue;
+        if ( str[0]=='e' ) return 1;
+
+        int key;
+           stringstream convert_stm(str.substr(1,str.size()-1));
+           if ( !(convert_stm>>key) ) key = -1;
+           if (str[0] == 'i')
+           {
+                hashymap.Insert(key);
+           }
+           else if (str[0] == 'd') //deleteeeeeeee
+           {   //double digits problem
+                int DelorNo = hashymap.Delete(key);
+                if(DelorNo == 1)
+                {
+                    cout << key << ":DELETED;" << endl;
+                }
+                else
+                {
+                    cout << key << "DELETED_FAILED;" << endl;
+                }
+
+           }
+           else if (str[0] == 's')
+           {
+                int neg1ifnotfound = hashymap.Search(key);
+                if(neg1ifnotfound == -1)
+                    cout << key << ":NOT_FOUND;" << endl;
+                else
+                {
+
+                }
+           }
+           else if (str[0] == 'o')
+           {
+                hashymap.Output();
+
+           }
+
+
+
+
+    }
+
+
+
+    return 0;
+
+
+}
