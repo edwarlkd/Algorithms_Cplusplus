@@ -1,0 +1,249 @@
+#include <iostream>
+#include <sstream>
+
+using namespace std;
+
+
+// Representation of an element in the tree
+struct Node {
+  int val;   // Value of the node
+  Node *left;   // Pointer to the left node
+  Node *right;  // Pointer to the right node
+  Node *parent; // Pointer to the parent node
+};
+
+class BSTh {
+  // Public Definitions
+  public:
+	  enum TraversalOrder { InOrderTrav, PreOrderTrav, PostOrderTrav };
+
+  // Public Functions/Variables
+  public:
+    BSTh(){
+        root = NULL;
+    }  // Constructor
+   ~BSTh()
+   {
+
+   } // Destructor
+    void Insert(int toInsert)
+    {
+
+      //creating a Node for the inserting value.
+      Node *z = new Node; //this is inserting node.
+      z->left = NULL;
+      z->right = NULL;
+      z->parent = NULL;
+      z->val = toInsert;
+
+      //this essentially serve as a parent of x, which will be used to find the node-slot for 'toInsert'
+      Node *y = NULL; // this is as a 'previous'; parents of 'c'.
+
+      //Node x is used as a guide through the binary tree.
+      Node *x = root; //replaced for c i think
+
+      while(x != NULL) // if root is not e  mpty
+      {
+              y = x; // x   is the current node; starting from root
+              if(toInsert < x->val)
+                x = x->left;
+              else
+                x = x->right;
+          }
+          z->parent = y;
+          if(y == NULL) //since while failed, y should be the null
+        {
+                root = z; //root is empty
+        }
+          else if (z->val < y->val)
+            y->left = z; //input value is smaller
+          else  //input value is bigger than the node
+            y->right = z;
+
+        }
+        void Delete(int toDelete)
+        {
+             // Write your code here
+      Node *z= new Node;
+      z = Search(root, toDelete);
+
+      Node *y = new Node;
+
+        if(z->left == NULL)
+            Transplant(z, z->right);
+        else if(z->right == NULL)
+            Transplant(z, z->left);
+        else
+        {
+            y = Minimum(z->right);
+
+            if(y->parent != z)
+            {
+                Transplant(y, y->right);
+                y->right = z->right;
+                y->right->parent = y;
+
+            }
+
+            Transplant(z, y);
+            y->left = z->left;
+            y->left->parent = y;
+
+        }
+    }
+
+    void Print(TraversalOrder Order)
+    {
+    if(Order==InOrderTrav)
+    InOrder(root);
+    else if(Order==PreOrderTrav)
+    PreOrder(root);
+    else if(Order==PostOrderTrav)
+    PostOrder(root);
+    }
+
+  // Private Functions/Variables
+  private:
+    Node *root;
+
+    Node *Search(Node *x, int toFind)
+    {
+            // Write your code here
+      if(x == NULL || toFind == x->val)
+      {
+          return x;
+      }
+      if(toFind < x->val) //toFind = k
+        return Search(x->left, toFind); //node1->left->value ?
+      else
+        return Search(x->right, toFind);
+    } // Searche for a node in the tree
+
+    Node *Successor(Node *x)
+    {
+              // Write your code here
+      if(x->right != NULL)
+        return Minimum(x->right);
+
+      Node *y = new Node;
+      y = x->parent;
+      while( y != NULL && x == y->right)
+      {
+          x = y;
+          y = y->parent;
+      }
+      return y;
+    } // Find the successor of the given node
+
+    Node *Minimum(Node *x)
+    {
+    // Write your code here
+      while(x->left != NULL)
+         x = x->left;
+      return x;
+    } // Find the minimum node of the given subtree
+
+    Node *Maximum(Node *x)
+    { // Write your code here
+      while(x->right != NULL)
+      x = x->right;
+      return x;
+    } // Find the minimum node of the given subtree
+
+    void Transplant(Node *u, Node *v)
+    {
+            // Write your code here
+      //replace subtree rooted at 'u' by subtree rooted at 'v'
+      if(u->parent == NULL)
+        root = v;
+      else if( u == u->parent->left)
+        u->parent->left = v;
+      else
+        u->parent->right = v;
+      if(v != NULL)
+        v->parent = u->parent;
+    } // Replace the subtree rooted at node u with the subtree rooted at node v
+
+    void InOrder(Node *x) // Inorder traversal
+    {
+        // Write your code here
+  if(x!= NULL)
+  {
+      InOrder(x->left);
+      cout << x->val << endl;
+      InOrder(x->right);
+  }
+    }
+
+    void PreOrder(Node *x)
+    {
+         // Write your code here
+  if(x != NULL)
+  {
+      cout << x->val << endl;
+      PreOrder(x->left);
+      PreOrder(x->right);
+  }
+    } // Preorder traversal
+
+    void PostOrder(Node *x) // Postorder traversal
+    {
+         // Write your code here
+    if(x!= NULL)
+    {
+        PostOrder(x->left);
+        PostOrder(x->right);
+        cout << x->val << endl;
+    }
+    }
+
+};
+
+int main(int argc,char **argv)
+{
+
+  // Create an empty Binary Search Tree
+  BSTh Tree;
+  // Using a fixed size buffer for reading content is not always safe,
+  // but ok here because we know how our input has to be:
+  char line[100];
+
+  // Main loop
+  while ( std::cin.getline(line, 100) )
+  {
+    string str(line);
+    if ( str.size()==0 ) continue;
+    if ( str[0]=='e' ) return 1;
+
+	// Use cerr if you want to always print to the console, because cout
+	// will be redirected to the output file when calling the Grade05 script:
+    // cerr<<line<<endl;
+
+    if ( str[0]=='o' )
+     {
+      if ( str.substr(0,3)=="oin" )
+      {
+        Tree.Print(BSTh::InOrderTrav);
+      }
+	  else if ( str.substr(0,4)=="opre" )
+      {
+        Tree.Print ( BSTh::PreOrderTrav );
+      }
+	  else if (str.substr(0,5) == "opost")
+      {
+        Tree.Print(BSTh::PostOrderTrav);
+      }
+     }
+	else
+	 { int key;
+       stringstream convert_stm(str.substr(1,str.size()-1));
+       if ( !(convert_stm>>key) ) key = -1;
+
+       if (str.substr(0,1) == "i") Tree.Insert(key);
+       else
+       if (str.substr(0,1) == "d") Tree.Delete(key);
+	 }
+  }
+
+  return 1;
+}
