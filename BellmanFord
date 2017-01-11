@@ -1,0 +1,369 @@
+#include <iostream>
+#include <string>
+#include <sstream>
+#include "stdlib.h"
+
+using namespace std;
+
+class Node
+{
+    public:
+    int weight;
+    int vertex;
+    int distance;
+    Node *next;
+    Node *parent;
+
+    Node()
+    {
+        vertex = 0;
+        weight = 1000;
+        distance = 1000;
+        parent = NULL;
+        next = NULL;
+    }
+    Node(int v, int w)
+    {
+        parent = NULL;
+        next = NULL;
+        weight = w;
+        distance = 1000;
+        vertex = v;
+
+    }
+    Node(int x)
+    {
+        vertex = x;
+        weight = 1000;
+        distance = 1000;
+        parent = NULL;
+        next = NULL;
+    }
+    void SetWeight(int w)
+    {
+        weight = w;
+    }
+    void SetDistance(int d)
+    {
+        distance = d;
+    }
+
+};
+
+class Nodelist
+{
+    private:
+    Node **nlist;
+    Node *thenode;
+    int nOfv;
+    int nOfe;
+    bool cycle;
+    public:
+    Nodelist()
+    {
+
+    }
+
+    Nodelist(int nOfVertex, int nOfEdges)
+    {
+        cycle = true;
+        nOfv = nOfVertex;
+        nOfe = nOfEdges;
+        thenode = NULL;
+        nlist = new Node*[nOfv];
+        for(int i = 0; i < nOfv; i++)
+        {
+          //  nlist[i] = new Node(i);
+            nlist[i] = NULL;
+            InserttheNode(i);
+        }
+    }
+
+    //initial
+    void Insertweight(int from, int to, int w)
+    {
+        if(nlist[from] == NULL)
+        {
+            nlist[from] = new Node(to, w);
+        }
+        else
+        {
+            Node *newone = new Node(to, w);
+            //attach from the back.
+            Node *temp = nlist[from];
+
+            while(temp->next != NULL)
+            {
+                temp = temp->next; //then temp is the last value.
+            }
+            temp->next = newone; // when there is only first value. its next doesn't exist so it just applies here.
+            }
+    }
+
+    //set the initial Node
+    void InserttheNode(int vert) //these insert into the node from back. ex: 0 -> 0 1 -> 0 1 2 ....
+    {
+        Node *tracker = thenode;
+        if(tracker == NULL)
+        {
+            thenode = new Node(vert);
+//               cout << "u.vertex" << u->vertex << endl << endl;
+        }
+        else
+        {
+            while(tracker != NULL)
+            {
+                if(tracker->next == NULL)
+                {
+                    tracker->next = new Node(vert);
+                    break;
+                }
+                tracker = tracker->next;
+            }
+
+        }
+    }
+
+    void initializeSingleSource(int s)
+    {
+        Node *sibal = thenode->next;
+        while(sibal != NULL)
+        {
+            sibal->distance = 1000;
+            sibal->parent = NULL;
+            sibal = sibal->next;
+        }
+        thenode->distance = 0;
+    }
+
+    int FindWeight(int u, int v)
+    {
+        //From 'u' vertex and 'v' vertex, find the weight.
+        // v.d > u.d + w(u,v)
+        Node *ayenode = nlist[u];
+        while(ayenode != NULL)
+        {
+            if(ayenode->vertex == v)
+                break;
+            ayenode = ayenode->next;
+        }
+        return ayenode->weight;
+    }
+
+    void Relax(int uV, int vV, int w)
+    {
+//        cout << "Relax called... " << endl;
+        Node *u = thenode;
+        Node *v = thenode;
+        while(u != NULL)
+        {
+            if(u->vertex == uV)
+                break;
+            u = u->next;
+        }
+        while(v != NULL)
+        {
+            if(v->vertex == vV)
+                break;
+            v = v->next;
+        }
+
+        if(v->distance > u->distance + w)
+        {
+            v->distance = u->distance + w;
+            v->parent = u;
+           // cout << "~~~~~~~~setin Relax()! v: " << v->vertex << "  v->d: " << v->distance << endl;
+        }
+    }
+
+    void BellhamFord()
+    {
+        //cout << "BellhamFord called..." << endl;
+        initializeSingleSource(0); //(G,s) 's' is the root
+      //  cout << "nOfv: " << nOfv << endl;
+       // cout << "nOfe: " << nOfe << endl;
+        for(int i = 0; i < nOfv - 1; i++)
+        {
+         //   cout << "~~~~~~~first for loop, i = " << i << "... ~~~~~~~~~~~" << endl;
+            int index = nOfv - 1; // so can check edges from back.
+            Node *edges = nlist[index]; //last one
+            //thenode, nlist
+            for(int j = 0; j < nOfe; j++) // for each edges
+            {
+      //          cout << "second loop with j = " << j << "... index: " << index << "  edges->v: " << edges->vertex << endl;
+                //then index is u and nlist[index] has v
+                Relax(index, edges->vertex, edges->weight);
+                edges = edges->next;
+                if(edges == NULL && index >= 0)
+                {
+                    index--;
+                    edges = nlist[index];
+                }
+            }
+        }
+
+        //checking for cycle
+        int index2 = nOfv - 1; // so can check edges from back.
+        Node *edges2 = nlist[index2]; //last one
+        //thenode, nlist
+        for(int j = 0; j < nOfe; j++) // for each edges
+        {
+            //for each edge (u,v)
+            //if (v.d > u.d = w(u,v), return false
+            Node *uu = thenode;
+            Node *vv = thenode;
+            while(uu!=NULL)
+            {
+                if(uu->vertex == index2)
+                    break;
+                uu= uu->next;
+            }
+            while(vv!=NULL)
+            {
+                if(vv->vertex == edges2->vertex)
+                    break;
+                vv = vv->next;
+            } // just setting uu and vv
+            if(vv->distance > uu->distance + edges2->weight)
+            {
+                cycle = false;
+                break;
+            }
+            edges2 = edges2->next;
+            if(edges2 == NULL && index2 >= 0)
+                {
+                    index2--;
+                    edges2 = nlist[index2];
+                }
+        }
+
+
+    }
+
+    int countelements(Node *node1)
+    {
+        int x = 0;
+        while(node1 != NULL)
+        {
+            x++;
+            node1 = node1->next;
+        }
+        return (x); //so it skips the first value.
+    }
+
+
+    void output()
+    {
+        cout << "cycle: " << cycle << endl;
+        Node *okidoki = thenode;
+        while(okidoki != NULL)
+        {
+            cout << okidoki->vertex << "::  v.d: " << okidoki->distance;
+            if(okidoki->parent != NULL)
+                cout << "  v.p: " << okidoki->parent->vertex << endl;
+            else
+                cout << "  v.p: NULL" << endl;
+
+            okidoki = okidoki->next;
+        }
+    }
+
+    void Finaloutput()
+    {
+        if(cycle == 1)
+            cout << "TRUE" << endl;
+        else
+        {
+            cout << "FALSE" << endl;
+
+        }
+
+
+        Node *okidoki = thenode;
+        while(okidoki != NULL && cycle == true)
+        {
+            if(okidoki->distance != 1000)
+                cout << okidoki->distance << endl;
+            else
+                cout << "INFINITY" << endl;
+            okidoki = okidoki->next;
+        }
+
+    }
+
+
+
+        void output2()
+        {
+            for(int i = 0; i < nOfv; i++)
+            {
+                if(nlist[i] != NULL)
+                {
+                    Node *temp = nlist[i];
+                    cout << "node[" << i << "]: ";
+                    while(temp != NULL)
+                    {
+                        cout << temp->vertex << "(" << temp->weight << ")" << "  ";
+                        temp = temp->next;
+                    }
+                    cout << endl;
+                }
+                else
+                    cout << "node[" << i << "] is empty..." << endl;
+            }
+        }
+
+
+};
+
+int main()
+{
+
+    cerr << "Hello world!" << endl;
+    int nofv, nofe;
+    cin >> nofv;
+    cin >> nofe;
+    Nodelist nlist(nofv, nofe);
+    cin.ignore(100, '\n');
+    string str;
+    int x, y, z = 0;
+    for(int i = 0; i < nofe; i++)
+    {
+        getline(cin, str);
+
+        stringstream stream(str);
+        string n;
+        int cc = 0;
+        while(stream >> n){
+            if(cc==0)
+            {
+                cc++;
+                x = atoi(n.c_str()); //value = 45
+
+            }
+            else if(cc == 1)
+            {
+                cc++;
+                y = atoi(n.c_str()); //value = 45
+
+            }
+            else if(cc == 2)
+            {
+                cc++;
+                z = atoi(n.c_str());
+            }
+            if(cc == 3) //cc = 2 means both edges have been colleceted
+            {
+                nlist.Insertweight(x, y, z);
+          //      nlist.Insertweight(y, x, z); //we don't need it since we aren't working with undirected
+            }
+        }
+    }
+    //nlist.output2();
+    nlist.BellhamFord();
+    //nlist.output();
+    nlist.Finaloutput();
+
+
+    return 0;
+}
