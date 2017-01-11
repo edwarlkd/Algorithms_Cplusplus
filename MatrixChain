@@ -1,0 +1,129 @@
+// This program output the minimum number of operations required to perform the matrix chain multiplication.
+#include <iostream>
+#include <stdio.h>
+#include <ctype.h>
+#include <vector> // you may use the vector class to represent a matrix, for ex: vector<vector<int>> M;
+#include <sys/time.h>
+#include <stdlib.h>
+#include <climits>
+#include <string>
+#include <sstream>
+#include <string>
+#include <iterator>
+
+using namespace std;
+
+
+void PrintOptimalParens(int **s, int i, int j)
+{
+    if(i == j)
+    {
+        cout << "A" << i;
+    }
+    else
+    {
+        cout << "(";
+        PrintOptimalParens(s, i, s[i][j]);
+        PrintOptimalParens(s, s[i][j]+1, j);
+        cout << ")";
+    }
+
+}
+
+void matrixchainorder(int size1, int *p, int **m, int **s)
+{
+    int n = size1;
+
+    for(int i = 0; i < n; i++)
+    {
+        m[i][i] = 0;
+    }
+
+    for(int l = 1; l < n; l++)
+    {
+        for(int i = 0; i < n-l; i++)
+        {
+            int j = i + l;
+            m[i][j] = 1000000;
+            for(int k = i; k <= j - 1; k++)
+            {
+                int q = m[i][k] + m[k+1][j] + p[i]*p[k+1]*p[j+1];
+
+                if (q < m[i][j])
+                {
+                    m[i][j] = q;
+                    s[i][j] = k;
+                }
+
+            }
+        }
+    }
+}
+
+int main()
+{
+        int size1;
+        cin >> size1;
+        cin.ignore(1000, '\n');
+
+       int *arr;
+       arr = new int[size1];
+
+       int **s; // m[1...n, 1...n]
+       int **m; // s[1..n-1, 2...n]
+        m = new int *[size1];
+        s = new int *[size1];
+
+       for(int i = 0; i < size1; i++)
+       {
+           m[i] = new int[size1];
+       }
+       for(int i= 0; i< size1; i++)
+       {
+           s[i] = new int[size1];
+       }
+
+       for(int i = 0; i < size1;i++)
+       {
+           for(int j = 0; j < size1; j++)
+           {
+               m[i][j] = -1;
+           }
+       }
+       for(int i = 0; i<size1;i++)
+       {
+           for(int j = 0; j < size1; j++)
+           {
+               s[i][j] = -1;
+           }
+       }
+
+    //here gets the string of array for the matrix size
+    //then store it into arr.
+       string rawInput;
+       getline(cin, rawInput);
+
+       istringstream iss(rawInput);
+       int temp;
+       vector<int> numbers;  //int put of the sizes
+
+      numbers.insert(numbers.begin(), istream_iterator<int>(iss), istream_iterator<int>());
+
+      for(int i = 0; i<numbers.size();i++)
+      {
+//          cout << numbers[i] << endl;
+          arr[i] = numbers[i];
+      }
+
+    //this one contains both m and s so that the function will modify the array without return.
+    matrixchainorder(size1,arr, m, s);
+
+    cout << m[0][size1-1] << endl;
+    PrintOptimalParens(s, 0, size1-1);
+    cout << endl;
+
+    return 0;
+   // etc
+
+}
+
