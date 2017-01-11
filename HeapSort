@@ -1,0 +1,111 @@
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include "math.h"
+using namespace std;
+
+void maxheapify(int *A, int i, int heapsize) //i is index of the node (ie. i = 0)
+{
+    //heapsize == elements stored in the max-heap
+    //so i think for my program, it's the last index of the element.
+
+    //if it exceeds heapsize, set it the value of that array to 0 or omsething
+    int indexL = 2*i; //if i = 1
+    int indexR = 2*i+1;
+
+    int largest = 0;
+
+    if(indexL <= heapsize && A[indexL] > A[i]) //check if Lindex is bigger
+        largest = indexL;
+    else
+        largest = i;
+
+    if(indexR <= heapsize && A[indexR] > A[largest]) //check if Rnode is bigger
+        largest = indexR;
+    if(largest != i)
+    {
+        //exchange
+        int temp = A[largest];
+        A[largest] = A[i];
+        A[i] = temp;
+
+  //      cerr << "A[i] = " << A[i] << "  A[largest]" << A[largest] << endl;
+    //    cerr << "In maxheapify(), after exchange: ";
+ //       for(int i = 1; i <= heapsize; i++)
+        //    cerr << A[i] << "  ";
+      //  cerr << endl;
+
+        //so if largest isn't changed, then the value is in max-ordered.
+        //so, it just exists out of the function.
+        maxheapify(A, largest, heapsize);
+    }
+
+//    cerr << "END of maxheapify.....\n";
+ //   cerr << "The tree: A[" << indexL << "] = " << A[indexL] << "   A[" << indexR << "] = " << A[indexR] << endl;
+  //  cerr << "i = " << i << "  indexL = " << indexL << "   indexR = " << indexR <<"   heapsize = " << heapsize << endl;
+   // cerr << endl;
+
+}
+
+void buildmaxheap(int *A, int arraysize) //touch on remaining parent nodes of trees.
+{
+     //right half of A are leaves
+    //re-arrange elements from middle of A to first element.
+    int heapsize = arraysize;  //this doesn't work, never works.
+
+    for(int i = floor(arraysize/2); i >= 1; i--) //from 1 to 0
+    {
+//        cout << "right before maxheapify(A, i, heapsize) = maxheapify(A, " << i << ", " << heapsize << ")  \n";
+  //      for(int j = 1; j <= arraysize;j++)
+    //        cout << A[j] << "   ";
+      //  cout << endl << endl;
+        maxheapify(A, i, heapsize);
+    }
+}
+
+void heapsort(int *A, int arraysize)
+{
+    int heapsize = arraysize;
+
+
+    buildmaxheap(A, arraysize);
+
+    for(int i = arraysize; i >= 2; i--) //changed i<=2 to 1 (doesn't check the first element since it should be smallest
+    {
+        //exchange A[1] with A[i]
+        int temp = A[1];
+        A[1] = A[i]; //changed from 1 to 0
+        A[i] = temp;
+
+        heapsize = heapsize-1;
+        maxheapify(A,1,heapsize); //changed from 1 to 0 == first element
+    }
+
+}
+
+int main()
+{
+    cerr << "Hello world!" << endl;
+
+
+    //ARRRRRRRRRRRRRRRRRRRRRRRRRAY
+    //heapsort
+    int *arr1;
+    int arraySize1;
+    cin >> arraySize1;
+    arr1 = new int[arraySize1+1];
+    ;//if first element is in [1]
+
+    for ( int i=1; i<=arraySize1; i++ )
+        cin >> arr1[i];
+    heapsort(arr1, arraySize1);
+
+ //   cerr << "After heapsort...    ";
+    for(int i = 1; i <= arraySize1; i++)
+            cout<< arr1[i] << endl;
+    ///////////////////////
+
+    delete[] arr1;
+
+    return 0;
+}
