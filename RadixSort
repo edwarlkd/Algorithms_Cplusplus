@@ -1,0 +1,110 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <ctype.h>
+
+using namespace std;
+
+void radixsort(int *arr, int arrsize)
+{
+    //arrsize == total numbers of element in 'vec'.
+
+    for(int i = 0; i < 10; i++) // d == 10 for our case. 'each digits' in a vector of 10
+    {   // 'i' is the location of the digits.
+        // if 0~9, 10~19, 20~29, 30~39, so on.
+
+        int index = 9-i;//first element of the column in first row
+        //sort each digits
+        //insertionsort(array, index, size);
+        int key;
+
+        for(int j = 19; j < arrsize; j = j+10) //
+        {
+            // j is the one index being compared.
+
+            key = arr[j-i]; // j = 19, i = 9
+
+            int previousi = j - 10;
+            //if A[10] is bigger than A[0], SWAP!
+            int i2 = j -10 - i;
+
+            int tempy[10];
+            int h2 = 9;
+            for(int h = 0; h < 10; h++)
+            {  //tempy has thet entire row.
+                tempy[h] = arr[j-h2];
+                h2--;
+            }
+
+            while(i2>=index && arr[i2] > key) // bigger value found! swap the row
+            {
+                    //swapping
+                    //change it so that the whole row changes.
+                    for(int i3 = 0; i3 < 10; i3++)
+                    {
+                        //swap the latter (smaller value) by the previous (bigger).
+                        //get the second row that is smaller and exchanged.
+                        //arr[i2 + 10 - i3] = arr[i2 - i3];
+                        //i2 = i2 - 10;
+                        arr[previousi + 10 - i3] = arr[previousi - i3];
+
+                    }
+                    // (For While loop) to the 'next' previous row.
+                    i2 = i2 - 10;
+                    previousi = previousi - 10;
+            }
+            //replace the entire row of 'new location'
+              //arr[i2 + 10] = key;
+            //        previousi = previousi - 10;
+            // last time yield -1 = 9 - 10
+            previousi = previousi + 10;
+            int c = 9;
+            for(int h = 0; h < 10; h++)
+            {
+                arr[previousi-c] = tempy[h];
+                c--;
+            }
+
+
+
+        }
+    }
+}
+
+int main()
+{
+    cerr << "Hello world!" << endl;
+
+        int numberofvectors = 0;
+    cin>> numberofvectors;
+
+    //then inserting values for vector.
+    int *arr;
+    int vectorsTEN = numberofvectors * 10; // total number of elements.
+    arr = new int[vectorsTEN];
+
+    cerr << "vectorsTEN = " << vectorsTEN << "   numberofvectors: " << numberofvectors << endl << endl;
+
+    //input
+    for(int j = 0; j < numberofvectors; j++)
+    {
+        int i = 0;
+        while (i < 10 && scanf("%d", &arr[i + ( j * 10)]) == 1 )
+        {
+            i++;
+        }
+    }
+
+    radixsort(arr, vectorsTEN);
+
+    int cc=1;
+    for( int i = 0; i < vectorsTEN; i++)
+    {
+        cout << arr[i] << ";";
+        if(cc % 10 == 0)
+            cout << endl;
+        cc++;
+    }
+
+    return 0;
+}
