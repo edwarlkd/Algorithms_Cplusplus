@@ -1,0 +1,373 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <sstream>
+
+/*
+Priority Queue
+1. difference from queue is that it's not just FIFO (First in; first out)
+2. Differenece queue can be custom-modified to function as we desire (ex: min or max-queue, not FIFO)
+3. How is it useful for compression?
+    - Less bits to be used for most frequent... much better than having equal size bits for every instance of values.
+
+*/
+
+using namespace std;
+
+class node
+{
+    public:
+    char alpha;
+    int freq;
+
+    node *left;
+    node *right;
+
+    node()
+    {
+        this->alpha = '0';
+        this->freq = 0;
+        this->left = NULL;
+        this->right = NULL;
+    }
+
+    node(int x, char c)
+    {
+        this->alpha = c;
+        this->freq = x;
+        this->left = NULL;
+        this->right = NULL;
+    }
+
+};
+
+class listy
+{
+    private:
+    node **thelist;
+
+            public:
+
+        listy()
+        {
+            char c[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
+            thelist = new node*[6];
+            for(int i = 0; i < 6; i++)
+            {
+                thelist[i] = NULL;
+            }
+
+        left = false;
+        right = false;
+        leaffound = false;
+        index = 0;
+        hhh = 0;
+
+        }
+
+        void Output()
+        {
+            for(int i = 0; i < 6; i++)
+            {
+                if(thelist[i] != NULL)
+                    cout << thelist[i]->freq << "  ";
+                else
+                    cout << "  NULL  ";
+
+            }
+            cout << endl;
+        }
+
+
+    void setting(int index, int x, char c)
+    {
+        node *entry = thelist[index];
+        thelist[index] = new node(x, c);
+        entry = thelist[index];
+    }
+
+    void deletennode(int index)
+    {
+        //delete the node of the index
+        node **temp;
+        temp = thelist;
+
+
+
+    }
+
+    int findminindex(node **inputn)
+    {
+        //find min freq from the each node
+        int x, index;
+        index = 0;
+        int thex = 0;
+        //first assign the first value
+        for(int i = 0;  i < 6; i++)
+        {
+            if(inputn[i] != NULL)
+            {
+                 x = inputn[i]->freq;
+                 thex = i;
+                 break;
+            }
+        }
+
+        for(int i = thex; i < 6; i++)
+        {
+            if(inputn[i] != NULL)
+            {
+                if((inputn[i]->freq) <= x)
+                {
+                    x = inputn[i]->freq;
+                    index = i;
+                }
+            }
+            else //if the inputn[i] is NULL ; it will terminate so....
+            {
+
+            }
+        }
+
+        return index;  //and 'x' will be the number stored in the index.
+    }
+
+    void huffman()
+    {
+        int n = 6;
+
+        node **Q= thelist;
+
+
+        for(int i = 0; i < n-1; i++)
+        {
+            node *z = new node;
+            //z->left = NULL;
+            //z->right = NULL;
+
+            int x,y;
+            int xvalue, yvalue;
+
+            x = findminindex(Q); // x is now the index with the lowest freq
+            xvalue = Q[x]->freq;
+            z->left = thelist[x];  //ok stuck here
+//            cout << "x = " << x << "  xvalue: " << xvalue << endl;
+  //          cout << "Before Q[x] is nulled...  ";
+//            Output();
+            Q[x] = NULL;
+    //        cout << endl;
+      //      cout << "After...   ";
+  //          Output();
+
+            y = findminindex(Q); //maybe this goes to one with NULL; previous?
+            yvalue = Q[y]->freq;
+            z->right = Q[y];
+        //    cout << "y = " << y << "  yvalue: " << yvalue << endl;
+          //  cout << "Before Q[y] is nulled...  ";
+    //        Output();
+            //cout << endl;
+            Q[y] = NULL;
+//            cout << "After...   ";
+      //      Output();
+
+            z->alpha = 'X';
+            z->freq = xvalue + yvalue;
+  //          cout << "\nz->freq = " << z->freq << endl;
+            //just insert it to the one that is empty
+            //error: i think findmin() works fine now... but values still added onto both first and second instance...
+            for(int i = 0; i < 6; i++)
+            {
+                if(Q[i] == NULL)
+                {
+
+    //            cout << "~~i = " << i << endl;
+                    //the new node inserted
+                    Q[i] = z;
+      //          cout << "Q[" << i << "] = " << Q[i] << "   z = " << z << endl;
+        //        cout << "Q[" << i << "]->f = " << Q[i]->freq << "   z->f = " << z->freq << endl;
+                    break;
+                }
+            }
+//            delete z;
+        //    Output();
+
+          //   cout << "huffman ending" << endl;
+        }
+
+    }
+
+
+        int getsize() //count those that aren't NULL.
+        {
+           int counting = 0;
+           for(int i = 0; i < 6; i++)
+           {
+               if(thelist[i] != NULL)
+                {
+                    counting++;
+                }
+           }
+           return counting;
+        }
+
+
+        //this is for tracking and output
+        string ohmy;
+        bool reset;
+        bool left;
+        bool right;
+        bool leaffound;
+        int index;
+        int hhh ;
+        vector<string> outputencoding;
+
+        void pathfinder(node *path)
+        {
+            if(left) //left
+            {
+                ohmy.append("0");
+            }
+            if(right)
+            {
+                ohmy.append("1");
+            }
+
+
+            if(path->alpha == 'X')
+                hhh++;
+
+            //if it's a leaf.
+            if(path->left == NULL && path->right == NULL)
+            {
+
+                //convert the character into a string value
+                stringstream ss;
+                string s;
+                ss << path->alpha;
+                ss >> s;
+
+
+                outputencoding.push_back(s);
+                outputencoding[index].append(":");
+                outputencoding[index].append(ohmy);
+
+                index++;
+//                cout << "ohmy: " << ohmy << endl;
+
+
+                if(left)
+                {
+                    //ohmy.pop_back();
+                    ohmy.erase(ohmy.size()-1);
+                }
+                else if(right)
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                    //ohmy.pop_back();
+                    ohmy.erase(ohmy.size()-1);
+
+                    if(ohmy.length() == 0)
+                        break;
+
+                    }
+                }
+
+            }
+            else
+            {
+                leaffound = false;
+
+                left = true;
+                right = false;
+                pathfinder(path->left);
+                left = false;
+
+                right = true;
+                left = false;
+                pathfinder(path->right);
+                right = false;
+
+            }
+     }
+
+
+     void outputinorder()
+     {
+         char arr[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
+         stringstream ss;
+         string s;
+
+         for(int i = 0; i < 6; i++)
+         {
+            char ch = arr[i];
+
+             for(int j = 0; j < 6; j++)
+             {
+                 char substring = outputencoding[j][0];
+
+                 if(ch == substring)
+                 {
+                    cout << outputencoding[j] << endl;
+                 }
+
+             }
+         }
+
+     }
+
+     void callpathfinder()
+     {
+        pathfinder(thelist[0]);
+        outputinorder();
+     }
+
+
+
+    ////////////
+/*    void meow(node *tracker) //inorder output
+    {
+    //     cout << "thelist[0]->left->alpha: " << thelist[0]->alpha << endl;
+            if (tracker!= NULL)
+            {
+                meow(tracker->left);
+                cout << "freq: " << tracker->freq << endl;
+                if(tracker->alpha != NULL)
+                    cout << "alpha: " << tracker->alpha << endl;
+                else
+                    cout << "alpha: NULL NIGGA " << endl;
+                meow(tracker->right);
+            }
+        }
+
+        void tocallmeow()
+        {
+            meow(thelist[0]);
+        }
+*/
+
+};
+
+int main()
+{
+    cerr << "Hello world!" << endl;
+
+      //input for Frequency.
+
+    char c[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
+    listy list1;
+
+    for(int i = 0; i < 6; i++)
+    {
+        int x;
+        cin >> x;
+        list1.setting(i, x, c[i]);
+    }
+
+    list1.huffman();
+    list1.callpathfinder();
+
+
+    return 0;
+}
