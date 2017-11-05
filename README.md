@@ -14,11 +14,16 @@ Example:
 - More efficient than Insertion
 
 Example:
+
   5 9 6 2
-    /  \
+
+   /  \
+
   5,9   6,2
+
   / \   /  \
- 5   9  6   2
+ 
+  5   9  6   2
    |      |
  5   9  2   6
    |      |
